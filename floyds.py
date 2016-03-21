@@ -1,0 +1,48 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from astropy.io import fits
+from scipy.signal import resample
+
+# Load synthetic spectrum
+specfile = 'lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits'
+spec,spech = fits.getdata(specfile,header=True)
+
+# Load corresponding wavelength file
+wavefile = 'WAVE_PHOENIX-ACES-AGSS-COND-2011.fits'
+wave,waveh = fits.getdata(wavefile,header=True)
+
+# Plot the entire spectrum
+plt.ion()
+plt.figure(1)
+plt.clf()
+plt.plot(wave,spec)
+
+# Spectral grasp of FLOYDS
+inds, = np.where((wave >= 5400) & (wave <= 10000))
+plt.figure(2)
+plt.clf()
+plt.plot(wave[inds],spec[inds])
+
+# Floyds specifications
+R = 550 # Resolution = lambda over delta lambda
+dl = np.median(wave[inds])/R
+# Number of resolution elements across spectrum
+num = np.int(np.round((np.max(wave[inds])-np.min(wave[inds]))/dl))
+
+# Resample spectrum to the resolution of Floyds
+wave_resamp = []
+spec_resamp = []
+for i in range(num):
+    try:
+        bin, = np.where( (wave >= np.min(wave[inds])+ dl*i) &
+                      (wave < np.min(wave[inds]) + dl*(i+1)) )
+        wave_resamp = np.append(wave_resamp,np.mean(wave[bin]))
+        spec_resamp = np.append(spec_resamp,np.mean(spec[bin]))
+    except:
+        print 'Skipping iteration '+str(i)
+
+# Overplot the resampled spectrum
+plt.figure(2)
+plt.plot(wave_resamp,spec_resamp,'r-')
+plt.xlim(np.min(wave[inds]),np.max(wave[inds]))
+
