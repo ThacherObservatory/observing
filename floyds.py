@@ -14,6 +14,9 @@ from scipy.signal import resample
 #wave_resamp
 #spec_resamp
 
+#KO 3/29: Divided into two preliminary functions, read_spectra and bin_spectra
+            #Have not yet accounted for input R as formula or spectral grasp
+
 def read_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', plot=True):
                     spec,spech = fits.getdata(specfile,header=True)
@@ -46,7 +49,9 @@ def bin_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fi
             print 'Skipping iteration '+str(i)
     plt.figure(2)
     plt.plot(wave_resamp,spec_resamp,'r-')
-    plt.xlim(np.min(wave[inds]),np.max(wave[inds]))    
+    plt.xlim(np.min(wave[inds]),np.max(wave[inds])) 
+    
+    return wave_resamp, spec_resamp
         
 
 # Load synthetic spectrum
