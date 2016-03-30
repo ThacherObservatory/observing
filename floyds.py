@@ -17,6 +17,8 @@ from scipy.signal import resample
 #KO 3/29: Divided into two preliminary functions, read_spectra and bin_spectra
             #Have not yet accounted for input R as formula or spectral grasp
 
+#KO/LK 3/29: Met study hall to discuss progress/next steps 
+
 def read_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', plot=True):
                     spec,spech = fits.getdata(specfile,header=True)
@@ -32,7 +34,7 @@ def bin_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fi
     spec,spech = fits.getdata(specfile,header=True)
     wave,waveh = fits.getdata(wavefile,header=True)
     inds, = np.where((wave >= 5400) & (wave <= 10000))
-    plt.figure(2)
+    plt.figure(3)
     plt.clf()
     plt.plot(wave[inds],spec[inds])
     dl = np.median(wave[inds])/R
