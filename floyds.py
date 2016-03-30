@@ -21,18 +21,20 @@ from scipy.signal import resample
 
 def read_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', plot=True):
-                    spec,spech = fits.getdata(specfile,header=True)
-                    wave,waveh = fits.getdata(wavefile,header=True)
-                    if plot:
-                        plt.ion()
-                        plt.figure(1)
-                        plt.clf()
-                        plt.plot(wave,spec)
+     spec,spech = fits.getdata(specfile,header=True)
+     wave,waveh = fits.getdata(wavefile,header=True)
+     if plot:
+         plt.ion()
+         plt.figure(1)
+         plt.clf()
+         plt.plot(wave,spec)
+                        
+     return spec, wave
 
 def bin_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', R=550):
-    spec,spech = fits.getdata(specfile,header=True)
-    wave,waveh = fits.getdata(wavefile,header=True)
+    spec = fits.getdata(specfile)
+    wave = fits.getdata(wavefile)
     inds, = np.where((wave >= 5400) & (wave <= 10000))
     plt.figure(3)
     plt.clf()
