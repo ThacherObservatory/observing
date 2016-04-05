@@ -31,6 +31,32 @@ def read_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.f
                         
      return spec, wave
 
+def regrid_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
+                 wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits'):
+    spec = fits.getdata(specfile)
+    wave = fits.getdata(wavefile)
+    inds, = np.where((wave >= 5400) & (wave <= 10000))
+    plt.figure(3)
+    plt.clf()
+    plt.plot(wave[inds],spec[inds])
+    dl = np.median(wave[inds])/R
+    num = np.int(np.round((np.max(wave[inds])-np.min(wave[inds]))/dl))
+    wave_resamp = []
+    spec_resamp = []
+    for i in range(num):
+        try:
+            bin, = np.where( (wave >= np.min(wave[inds])+ dl*i) &
+                      (wave < np.min(wave[inds]) + dl*(i+1)) )
+            wave_resamp = np.append(wave_resamp,np.mean(wave[bin]))
+            spec_resamp = np.append(spec_resamp,np.mean(spec[bin]))
+        except:
+            print 'Skipping iteration '+str(i)
+    plt.figure(2)
+    plt.plot(wave_resamp,spec_resamp,'r-')
+    plt.xlim(np.min(wave[inds]),np.max(wave[inds])) 
+    
+    
+
 def bin_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', R=550):
     spec = fits.getdata(specfile)
