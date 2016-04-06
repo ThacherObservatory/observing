@@ -2,24 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
 from scipy.signal import resample
+from scipy import interpolate
 
-#need to for code (DUE BY NEXT SUNDAY 4/3)
-#write a function to read Phoenix spectra (option plot=True?)
-#Separate function: Bin spectrum
-#inputs:
-#R (lambda/delta lambda)
-#Spectral grasp (lamba initial to lamba final, range)
-#Spectrum and wavelength array
-#Outputs
-#wave_resamp
-#spec_resamp
 
 #KO 3/29: Divided into two preliminary functions, read_spectra and bin_spectra
             #Have not yet accounted for input R as formula or spectral grasp
-
 #KO/LK 3/29: Met study hall to discuss progress/next steps 
-
 #KO/LK 4/4: Met study hall to regrid_spectra
+#KO/LK 4/5: Met study hall to revise regrid_spectra
 
 def read_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', plot=True):
@@ -37,13 +27,18 @@ def regrid_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits',R=550):
     spec = fits.getdata(specfile)
     wave = fits.getdata(wavefile)
-    wave_log = np.append(wave,np.log(wave))
+    #wave_log = np.append(wave,np.log(wave))
     inds, = np.where((wave >= 5400) & (wave <= 10000))
+    startwave = 5400
+    stopwave = 10000
+    lnwave = np.linspace(np.log(startwave),np.log(stopwave),len(wave))
+    wave_logspace = np.exp(lnwave)
+    wave_interpolate = interpolate.interp1d(wave_logspace, spec)
     plt.figure(5)
-    plt.plot(wave_log,spec,'r-')
+    plt.plot(wave_interpolate,spec,'r-')
     plt.xlim(np.min(wave[inds]),np.max(wave[inds])) 
     
-    return wave_log, spec
+    return wave_logspace, spec
 
 def bin_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', R=550):
