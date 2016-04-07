@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from astropy.io import fits
 from scipy.signal import resample
 from scipy import interpolate
+import pdb
 
 
 #KO 3/29: Divided into two preliminary functions, read_spectra and bin_spectra
@@ -30,13 +31,14 @@ def regrid_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes
     #wave_log = np.append(wave,np.log(wave))
     inds, = np.where((wave >= 5400) & (wave <= 10000))
     startwave = 5400
-    stopwave = 10000
+    stopwave = 10000   
     lnwave = np.linspace(np.log(startwave),np.log(stopwave),len(wave))
     wave_logspace = np.exp(lnwave)
-    wave_interpolate = interpolate.interp1d(wave_logspace, spec)
+    wave_interpolate = interpolate.interp1d(wave, spec)
     plt.figure(5)
-    plt.plot(wave_interpolate,spec,'r-')
+    plt.plot(wave_interpolate(wave_logspace),spec,'r-')
     plt.xlim(np.min(wave[inds]),np.max(wave[inds])) 
+    plt.show()
     
     return wave_logspace, spec
 
