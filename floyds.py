@@ -4,6 +4,7 @@ from astropy.io import fits
 from scipy.signal import resample
 from scipy import interpolate
 import pdb
+from scipy.constants import constants as c
 
 
 #KO 3/29: Divided into two preliminary functions, read_spectra and bin_spectra
@@ -11,6 +12,7 @@ import pdb
 #KO/LK 3/29: Met study hall to discuss progress/next steps 
 #KO/LK 4/4: Met study hall to regrid_spectra
 #KO/LK 4/5: Met study hall to revise regrid_spectra
+#KO 4/7: Tried to fix regrid_spectra, failed. Started get_logg
 
 def read_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', plot=True):
@@ -25,7 +27,7 @@ def read_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.f
      return spec, wave
 
 def regrid_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
-                 wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits',R=550):
+                 wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits'):
     spec = fits.getdata(specfile)
     wave = fits.getdata(wavefile)
     #wave_log = np.append(wave,np.log(wave))
@@ -35,13 +37,15 @@ def regrid_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes
     lnwave = np.linspace(np.log(startwave),np.log(stopwave),len(wave))
     wave_logspace = np.exp(lnwave)
     wave_interpolate = interpolate.interp1d(wave, spec)
-    plt.figure(5)
-    plt.plot(wave_interpolate(wave_logspace),spec,'r-')
+    wave_final = wave_interpolate(wave_logspace)
+    plt.clf()    
+    plt.figure(6)
+    plt.plot(wave_final,spec,'r-')
     plt.xlim(np.min(wave[inds]),np.max(wave[inds])) 
     plt.show()
     
     return wave_logspace, spec
-
+    
 def bin_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', R=550):
     spec = fits.getdata(specfile)
@@ -67,7 +71,12 @@ def bin_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fi
     plt.xlim(np.min(wave[inds]),np.max(wave[inds])) 
     
     return wave_resamp, spec_resamp
-        
+
+def get_logg(mass,radius):
+    G = c.G
+    #M = 
+    #R = 
+    logg = np.log((G*M)/(R^2)
 
 # Load synthetic spectrum
 #specfile = 'lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits'
