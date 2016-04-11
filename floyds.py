@@ -25,27 +25,7 @@ def read_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.f
          plt.plot(wave,spec)
                         
      return spec, wave
-
-def regrid_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
-                 wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits'):
-    spec = fits.getdata(specfile)
-    wave = fits.getdata(wavefile)
-    #wave_log = np.append(wave,np.log(wave))
-    inds, = np.where((wave >= 5400) & (wave <= 10000))
-    startwave = 5400
-    stopwave = 10000   
-    lnwave = np.linspace(np.log(startwave),np.log(stopwave),len(wave))
-    wave_logspace = np.exp(lnwave)
-    wave_interpolate = interpolate.interp1d(wave, spec)
-    wave_final = wave_interpolate(wave_logspace)
-    plt.clf()    
-    plt.figure(6)
-    plt.plot(wave_final,spec,'r-')
-    plt.xlim(np.min(wave[inds]),np.max(wave[inds])) 
-    plt.show()
-    
-    return wave_logspace, spec
-    
+     
 def bin_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', R=550):
     spec = fits.getdata(specfile)
@@ -72,6 +52,28 @@ def bin_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fi
     
     return wave_resamp, spec_resamp
 
+def regrid_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
+                 wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits'):
+    spec = fits.getdata(specfile)
+    wave = fits.getdata(wavefile)
+    #wave_log = np.append(wave,np.log(wave))
+    inds, = np.where((wave >= 5400) & (wave <= 10000))
+    startwave = 5400
+    stopwave = 10000   
+    lnwave = np.linspace(np.log(startwave),np.log(stopwave),len(wave))
+    wave_logspace = np.exp(lnwave)
+    wave_interpolate = interpolate.interp1d(wave, spec)
+    wave_final = wave_interpolate(wave_logspace)
+    plt.clf()    
+    plt.ion()
+    plt.figure(6)
+    plt.plot(wave_final,spec,'r-')
+    plt.xlim(np.min(wave[inds]),np.max(wave[inds])) 
+    plt.show()
+    
+    return wave_logspace, spec
+
+'''
 def get_logg(mass,radius):
     G = c.G
     #M = 
@@ -120,4 +122,4 @@ def get_logg(mass,radius):
 #plt.figure(2)
 #plt.plot(wave_resamp,spec_resamp,'r-')
 #plt.xlim(np.min(wave[inds]),np.max(wave[inds]))
-
+'''
