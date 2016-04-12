@@ -6,14 +6,16 @@ from scipy import interpolate
 import pdb
 from scipy.constants import constants as c
 import matplotlib.patches as mpatches
+import glob as glob
 
 
 #KO 3/29: Divided into two preliminary functions, read_spectra and bin_spectra
-            #Have not yet accounted for input R as formula or spectral grasp
 #KO/LK 3/29: Met study hall to discuss progress/next steps 
 #KO/LK 4/4: Met study hall to regrid_spectra
 #KO/LK 4/5: Met study hall to revise regrid_spectra
 #KO 4/7: Tried to fix regrid_spectra, failed. Started get_logg
+#KO/LK 4/12: added poisson noise to bin_spectra
+#KO 4/13: started work on get_values
 
 def read_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', plot=True):
@@ -26,6 +28,15 @@ def read_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.f
          plt.plot(wave,spec)
                         
      return spec, wave
+     
+def get_values(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
+                 wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits'):
+    temp = float('lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits'[3:-48])
+    radius = float('lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits'[9:-44])
+    
+    return temp, radius
+    
+    #files = glob.glob('Mantis*[0-9]'+band+'_cal.fit*')
      
 def bin_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', R=550):
@@ -69,7 +80,6 @@ def regrid_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits'):
     spec = fits.getdata(specfile)
     wave = fits.getdata(wavefile)
-    #wave_log = np.append(wave,np.log(wave))
     inds, = np.where((wave >= 5400) & (wave <= 10000))
     startwave = 5400
     stopwave = 10000   
