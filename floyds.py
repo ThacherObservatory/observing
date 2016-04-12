@@ -31,12 +31,10 @@ def read_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.f
      
 def get_values(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits'):
-    temp = float('lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits'[3:-48])
-    radius = float('lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits'[9:-44])
+    temp = float(specfile[3:-48])
+    radius = float(specfile[9:-44])
     
     return temp, radius
-    
-    #files = glob.glob('Mantis*[0-9]'+band+'_cal.fit*')
      
 def bin_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', R=550):
