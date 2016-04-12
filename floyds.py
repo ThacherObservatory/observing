@@ -15,7 +15,7 @@ import glob as glob
 #KO/LK 4/5: Met study hall to revise regrid_spectra
 #KO 4/7: Tried to fix regrid_spectra, failed. Started get_logg
 #KO/LK 4/12: added poisson noise to bin_spectra
-#KO 4/13: started work on get_values
+#KO 4/13: started work on get_values, combined get_values and get_logg
 
 def read_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', plot=True):
@@ -26,15 +26,10 @@ def read_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.f
          plt.figure(1)
          plt.clf()
          plt.plot(wave,spec)
+         plt.xlabel('Wavelength')
+         plt.ylabel('Flux')
                         
      return spec, wave
-     
-def get_values(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
-                 wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits'):
-    temp = float(specfile[3:-48])
-    radius = float(specfile[9:-44])
-    
-    return temp, radius
      
 def bin_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', R=550):
@@ -69,7 +64,6 @@ def bin_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fi
     green_patch = mpatches.Patch(color='G', label = 'No noise')
     plt.legend(handles=[red_patch,green_patch], loc=4)
     plt.show()
-    
     plt.xlim(np.min(wave[inds]),np.max(wave[inds])) 
     
     return wave_resamp, noisy_spec
@@ -98,49 +92,14 @@ def regrid_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes
 def get_logg(mass,radius):
     G = c.G
     #M = 
-    #R = 
+    R = float(specfile[9:-44])
     logg = np.log((G*M)/(R^2)
-
-# Load synthetic spectrum
-#specfile = 'lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits'
-#spec,spech = fits.getdata(specfile,header=True)
-
-# Load corresponding wavelength file
-#wavefile = 'WAVE_PHOENIX-ACES-AGSS-COND-2011.fits'
-#wave,waveh = fits.getdata(wavefile,header=True)
-
-# Plot the entire spectrum
-#plt.ion()
-#plt.figure(1)
-#plt.clf()
-#plt.plot(wave,spec)
-
-# Spectral grasp of FLOYDS
-#inds, = np.where((wave >= 5400) & (wave <= 10000))
-#plt.figure(2)
-#plt.clf()
-#plt.plot(wave[inds],spec[inds])
-
-# Floyds specifications
-#R = 550 # Resolution = lambda over delta lambda
-#dl = np.median(wave[inds])/R
-# Number of resolution elements across spectrum
-#num = np.int(np.round((np.max(wave[inds])-np.min(wave[inds]))/dl))
-
-# Resample spectrum to the resolution of Floyds
-#wave_resamp = []
-#spec_resamp = []
-#for i in range(num):
-    #try:
-     #   bin, = np.where( (wave >= np.min(wave[inds])+ dl*i) &
-      #                (wave < np.min(wave[inds]) + dl*(i+1)) )
-       # wave_resamp = np.append(wave_resamp,np.mean(wave[bin]))
-        #spec_resamp = np.append(spec_resamp,np.mean(spec[bin]))
-    #except:
-     #   print 'Skipping iteration '+str(i)
-
-# Overplot the resampled spectrum
-#plt.figure(2)
-#plt.plot(wave_resamp,spec_resamp,'r-')
-#plt.xlim(np.min(wave[inds]),np.max(wave[inds]))
 '''
+    
+    
+def get_values(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits'):
+    temp = float(specfile[3:-48])
+    radius = float(specfile[9:-44])
+    metal = float(specfile[14:-39])
+    
+    return temp, radius, metal
