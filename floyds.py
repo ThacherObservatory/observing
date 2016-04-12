@@ -5,6 +5,7 @@ from scipy.signal import resample
 from scipy import interpolate
 import pdb
 from scipy.constants import constants as c
+import matplotlib.patches as mpatches
 
 
 #KO 3/29: Divided into two preliminary functions, read_spectra and bin_spectra
@@ -46,11 +47,23 @@ def bin_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fi
             spec_resamp = np.append(spec_resamp,np.mean(spec[bin]))
         except:
             print 'Skipping iteration '+str(i)
+    s = spec_resamp
+    scaled_s = (1000*s)/(np.median(s))
+    noisy_spec = np.random.poisson(scaled_s)
+    plt.clf()
     plt.figure(2)
-    plt.plot(wave_resamp,spec_resamp,'r-')
+    plt.plot(wave_resamp,noisy_spec,'r-')
+    plt.plot(wave_resamp,scaled_s,'g-')
+    plt.xlabel('Wavelength')
+    plt.ylabel('Flux')
+    red_patch = mpatches.Patch(color='R', label = 'Noise')
+    green_patch = mpatches.Patch(color='G', label = 'No noise')
+    plt.legend(handles=[red_patch,green_patch], loc=4)
+    plt.show()
+    
     plt.xlim(np.min(wave[inds]),np.max(wave[inds])) 
     
-    return wave_resamp, spec_resamp
+    return wave_resamp, noisy_spec
 
 def regrid_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits'):
