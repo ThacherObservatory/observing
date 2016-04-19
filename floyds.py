@@ -7,6 +7,7 @@ import pdb
 from scipy.constants import constants as c
 import matplotlib.patches as mpatches
 import glob as glob
+import math
 
 
 #KO 3/29: Divided into two preliminary functions, read_spectra and bin_spectra
@@ -16,6 +17,7 @@ import glob as glob
 #KO 4/7: Tried to fix regrid_spectra, failed. Started get_logg
 #KO/LK 4/12: added poisson noise to bin_spectra
 #KO 4/13: started work on get_values, combined get_values and get_logg
+#KO 4/19: started get_snr
 
 def read_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', plot=True):
@@ -103,3 +105,13 @@ def get_values(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fit
     metal = float(specfile[14:-39])
     
     return temp, radius, metal
+    
+def get_snr(teff=700,mag=15):
+    B = 1.89 * (10 ** -6)
+    # this value is incorrect but placehold for now
+    T = math.sqrt(teff)
+    M = 10 ** (-0.4 * mag)
+    SNR = B * T * M
+    # this returns an obviously false result
+    
+    return SNR
