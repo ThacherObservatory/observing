@@ -109,7 +109,7 @@ def get_logg(mass,radius):
     logg = np.log((G*M)/(R^2)
 '''
     
-# returns values of Teff, Radius, and Metallicity from PHOENIX file
+# returns values of temp, Radius, and Metallicity from PHOENIX file
     # should eventually read the header of the file
 def get_values(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits'):
     temp = float(specfile[3:-48])
@@ -118,13 +118,13 @@ def get_values(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fit
     
     return temp, radius, metal
     
-# calculates SNR based on given Teff and magnitude
-def get_snr(teff=700,mag=15):
-    B = 1.89 * (10 ** -6)
-    # this value is incorrect but placehold for now
-    T = math.sqrt(teff)
+# calculates SNR based on given time and magnitude
+    #broken
+    # make so give time and mag and spit back spectrum with proper noise
+def get_snr(time=700,mag=15):
+    B = 1.89e6
+    T = math.sqrt(time)
     M = 10 ** (-0.4 * mag)
     SNR = B * T * M
-    # this returns an obviously false result
-    
+
     return SNR
