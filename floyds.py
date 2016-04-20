@@ -1,3 +1,19 @@
+######################################
+# Script to simulate LCOGT FLOYDS results
+# Katie O'Neill, Liam Kirkpatrick
+#
+#KO 3/29/16: Divided into two preliminary functions, read_spectra and bin_spectra
+#KO/LK 3/29/16: Met study hall to discuss progress/next steps 
+#KO/LK 4/4/16: Met study hall to regrid_spectra
+#KO/LK 4/5/16: Met study hall to revise regrid_spectra
+#KO 4/7/16: Tried to fix regrid_spectra, failed. Started get_logg
+#KO/LK 4/12/16: added poisson noise to bin_spectra
+#KO 4/13/16: started work on get_values, combined get_values and get_logg
+#KO 4/19/16: started get_snr
+#KO 4/20/16: added comments, cleaned up
+######################################
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
@@ -9,17 +25,8 @@ import matplotlib.patches as mpatches
 import glob as glob
 import math
 
-
-#KO 3/29: Divided into two preliminary functions, read_spectra and bin_spectra
-#KO/LK 3/29: Met study hall to discuss progress/next steps 
-#KO/LK 4/4: Met study hall to regrid_spectra
-#KO/LK 4/5: Met study hall to revise regrid_spectra
-#KO 4/7: Tried to fix regrid_spectra, failed. Started get_logg
-#KO/LK 4/12: added poisson noise to bin_spectra
-#KO 4/13: started work on get_values, combined get_values and get_logg
-#KO 4/19: started get_snr
-
-def read_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
+# read spectrum and plot (no frills version)
+def read_spectrum(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', plot=True):
      spec,spech = fits.getdata(specfile,header=True)
      wave,waveh = fits.getdata(wavefile,header=True)
@@ -33,7 +40,8 @@ def read_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.f
                         
      return spec, wave
      
-def bin_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
+# read spectrum and plot, limited to FLOYDS wavelength values, with poisson noise added
+def bin_spectrum(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', R=550):
     spec = fits.getdata(specfile)
     wave = fits.getdata(wavefile)
@@ -70,7 +78,8 @@ def bin_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fi
     
     return wave_resamp, noisy_spec
 
-def regrid_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
+# read spectrum and plot, resampled into logspace
+def regrid_spectrum(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits'):
     spec = fits.getdata(specfile)
     wave = fits.getdata(wavefile)
@@ -91,14 +100,17 @@ def regrid_spectra(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes
     return wave_logspace, spec
 
 '''
+# will eventually return the value of logg based on mass and radius of star
 def get_logg(mass,radius):
     G = c.G
     #M = 
+    # need to figure out how to input M
     R = float(specfile[9:-44])
     logg = np.log((G*M)/(R^2)
 '''
     
-    
+# returns values of Teff, Radius, and Metallicity from PHOENIX file
+    # should eventually read the header of the file
 def get_values(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits'):
     temp = float(specfile[3:-48])
     radius = float(specfile[9:-44])
@@ -106,6 +118,7 @@ def get_values(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fit
     
     return temp, radius, metal
     
+# calculates SNR based on given Teff and magnitude
 def get_snr(teff=700,mag=15):
     B = 1.89 * (10 ** -6)
     # this value is incorrect but placehold for now
