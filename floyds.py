@@ -1,16 +1,20 @@
 ######################################
 # Script to simulate LCOGT FLOYDS results
-# Katie O'Neill, Liam Kirkpatrick
+# Katie O'Neill, Liam Kirkpatrick (with some help from jswift)
 #
-#KO 3/29/16: Divided into two preliminary functions, read_spectra and bin_spectra
-#KO/LK 3/29/16: Met study hall to discuss progress/next steps 
-#KO/LK 4/4/16: Met study hall to regrid_spectra
-#KO/LK 4/5/16: Met study hall to revise regrid_spectra
-#KO 4/7/16: Tried to fix regrid_spectra, failed. Started get_logg
-#KO/LK 4/12/16: added poisson noise to bin_spectra
-#KO 4/13/16: started work on get_values, combined get_values and get_logg
-#KO 4/19/16: started get_snr
-#KO 4/20/16: added comments, cleaned up
+# KO 3/29/16: Divided into two preliminary functions, read_spectra and bin_spectra
+# KO/LK 3/29/16: Met study hall to discuss progress/next steps 
+# KO/LK 4/4/16: Met study hall to regrid_spectra
+# KO/LK 4/5/16: Met study hall to revise regrid_spectra
+# KO 4/7/16: Tried to fix regrid_spectra, failed. Started get_logg
+# KO/LK 4/12/16: added poisson noise to bin_spectra
+# KO 4/13/16: started work on get_values, combined get_values and get_logg
+# KO 4/19/16: started get_snr
+# KO 4/20/16: added comments, cleaned up
+# jswift 4/24/16: general clean up, separated add_noise function from rebin_spectrum,
+#                 import homegrown constants (in utils) instead of scipy constants,
+#                 smooth_spectrum, and flatten_spectrum added as key elements in
+#                 preparation for autocorrelation
 ######################################
 
 
@@ -20,14 +24,18 @@ from astropy.io import fits
 from scipy.signal import resample
 from scipy import interpolate
 import pdb
-from scipy.constants import constants as c
+#from scipy.constants import constants as c
+import constants as c
 import matplotlib.patches as mpatches
 import glob as glob
 import math
+from scipy.signal import savgol_filter
 
-# read spectrum and plot (no frills version)
 def read_spectrum(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
-                 wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', plot=True):
+                  wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', plot=False):
+     '''
+     Read spectrum and plot (no frills version)
+     '''
      spec,spech = fits.getdata(specfile,header=True)
      wave,waveh = fits.getdata(wavefile,header=True)
      if plot:
@@ -38,93 +46,186 @@ def read_spectrum(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.
          plt.xlabel('Wavelength')
          plt.ylabel('Flux')
                         
-     return spec, wave
+     return wave, spec
+
+######################################################################
+def bin_spectrum(wave,spec, R=550,plot=False):
+     '''
+     Read spectrum and plot, limited to FLOYDS wavelength values
+     (js: you will want noise addition to be a separate procedure)
+
+     '''
+
+     inds, = np.where((wave >= 5400) & (wave <= 10000))
+     plt.figure(3)
+     plt.clf()
+     plt.plot(wave[inds],spec[inds])
+     dl = np.median(wave[inds])/R
+     num = np.int(np.round((np.max(wave[inds])-np.min(wave[inds]))/dl))
+     wave_resamp = []
+     spec_resamp = []
+     for i in range(num):
+          try:
+               bin, = np.where( (wave >= np.min(wave[inds])+ dl*i) &
+                                (wave < np.min(wave[inds]) + dl*(i+1)) )
+               wave_resamp = np.append(wave_resamp,np.mean(wave[bin]))
+               spec_resamp = np.append(spec_resamp,np.mean(spec[bin]))
+          except:
+               print 'Skipping iteration '+str(i)
+ 
+     if plot:
+          plt.ion()
+          plt.figure(2)
+          plt.clf()
+          plt.plot(wave,spec,'k-')
+          plt.plot(wave_resamp,spec_resamp,'r-')
+          plt.xlabel('Wavelength')
+          plt.ylabel('Flux')
+          black_patch = mpatches.Patch(color='K', label = 'Original')
+          blue_patch = mpatches.Patch(color='R', label = 'Re-binned')
+          plt.legend(handles=[black_patch,blue_patch], loc=4)
+          plt.xlim(np.min(wave[inds]),np.max(wave[inds])) 
+          plt.show()
      
-# read spectrum and plot, limited to FLOYDS wavelength values, with poisson noise added
-def bin_spectrum(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
-                 wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', R=550):
-    spec = fits.getdata(specfile)
-    wave = fits.getdata(wavefile)
-    inds, = np.where((wave >= 5400) & (wave <= 10000))
-    plt.figure(3)
-    plt.clf()
-    plt.plot(wave[inds],spec[inds])
-    dl = np.median(wave[inds])/R
-    num = np.int(np.round((np.max(wave[inds])-np.min(wave[inds]))/dl))
-    wave_resamp = []
-    spec_resamp = []
-    for i in range(num):
-        try:
-            bin, = np.where( (wave >= np.min(wave[inds])+ dl*i) &
-                      (wave < np.min(wave[inds]) + dl*(i+1)) )
-            wave_resamp = np.append(wave_resamp,np.mean(wave[bin]))
-            spec_resamp = np.append(spec_resamp,np.mean(spec[bin]))
-        except:
-            print 'Skipping iteration '+str(i)
-    s = spec_resamp
-    scaled_s = (1000*s)/(np.median(s))
-    noisy_spec = np.random.poisson(scaled_s)
-    plt.clf()
-    plt.figure(2)
-    plt.plot(wave_resamp,noisy_spec,'r-')
-    plt.plot(wave_resamp,scaled_s,'g-')
-    plt.xlabel('Wavelength')
-    plt.ylabel('Flux')
-    red_patch = mpatches.Patch(color='R', label = 'Noise')
-    green_patch = mpatches.Patch(color='G', label = 'No noise')
-    plt.legend(handles=[red_patch,green_patch], loc=4)
-    plt.show()
-    plt.xlim(np.min(wave[inds]),np.max(wave[inds])) 
-    
-    return wave_resamp, noisy_spec
+     return wave_resamp, spec_resamp
 
-# read spectrum and plot, resampled into logspace
-def regrid_spectrum(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
-                 wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits'):
-    spec = fits.getdata(specfile)
-    wave = fits.getdata(wavefile)
-    inds, = np.where((wave >= 5400) & (wave <= 10000))
-    startwave = 5400
-    stopwave = 10000   
-    lnwave = np.linspace(np.log(startwave),np.log(stopwave),len(wave))
-    wave_logspace = np.exp(lnwave)
-    wave_interpolate = interpolate.interp1d(wave, spec)
-    wave_final = wave_interpolate(wave_logspace)
-    plt.clf()    
-    plt.ion()
-    plt.figure(6)
-    plt.plot(wave_final,spec,'r-')
-    plt.xlim(np.min(wave[inds]),np.max(wave[inds])) 
-    plt.show()
-    
-    return wave_logspace, spec
 
-'''
-# will eventually return the value of logg based on mass and radius of star
+
+######################################################################
+def add_noise(wave,spec,SNR=50.0,plot=False):
+     '''
+     Add poisson noise to a binned spectrum
+     '''
+
+     scale = SNR**2
+     scaled_s = (scale*spec)/(np.median(spec))
+     noisy_spec = np.random.poisson(scaled_s)
+
+     if plot:
+          plt.ion()
+          plt.figure(3)
+          plt.clf()
+          plt.plot(wave,spec,'k-')
+          plt.plot(wave,noisy_spec,'b-')
+          plt.xlabel('Wavelength')
+          plt.ylabel('Flux')
+          black_patch = mpatches.Patch(color='K', label = 'Original')
+          blue_patch = mpatches.Patch(color='B', label = 'Noisy')
+          plt.legend(handles=[black_patch,blue_patch], loc=4)
+          plt.xlim(np.min(wave[inds]),np.max(wave[inds])) 
+          plt.show()
+
+     return wave, noisy_spec
+          
+
+
+######################################################################
+def regrid_spectrum(wave,spec,plot=False):
+     """
+     Resample spectrum into logspace
+     """
+
+     inds, = np.where((wave >= 5400) & (wave <= 10000))
+     startwave = 5400
+     stopwave = 10000   
+     lnwave = np.linspace(np.log(startwave),np.log(stopwave),len(wave))
+     wave_logspace = np.exp(lnwave)
+     wave_interpolate = interpolate.interp1d(wave, spec)
+     wave_final = wave_interpolate(wave_logspace)
+     
+     if plot:
+          plt.ion()
+          plt.clf()    
+          plt.figure(4)
+          plt.plot(wave_final,spec,'r-')
+          plt.xlim(np.min(wave[inds]),np.max(wave[inds])) 
+          
+     return wave_logspace, spec
+
+
+######################################################################
+def smooth_spectrum(spec,window=45,polyorder=3):
+     '''
+     Smooth spectrum so that it may be "flattened" in preparation for
+     cross correlation
+     '''
+     if window % 2 == 0:
+          print('Filter window must be odd!')
+          return None
+
+     smooth_spec = savgol_filter(spec,window,polyorder)
+
+     return smooth_spec
+
+######################################################################
+def flatten_spec(spec,window=45,polyorder=3,plot=False):
+     '''
+     Flatten given spectrum using a Savitzky-Golay filter
+     '''
+
+     smooth_spec = smooth_spectrum(spec,window=window,polyorder=polyorder)
+
+     flat_spec = spec/smooth_spec - 1
+
+     if plot:
+          plt.ion()
+          plt.figure(5)
+          plt.clf()
+          plt.plot(spec/np.median(spec)-1,'k-')
+          plt.plot(flat_spec,'r-')
+          plt.axhline(y=0,color='g',linestyle='--')
+          plt.xlabel('Pixel')
+          plt.ylabel('Flux')
+          black_patch = mpatches.Patch(color='K', label = 'Original')
+          red_patch = mpatches.Patch(color='R', label = 'Flattened')
+          plt.legend(handles=[black_patch,red_patch], loc=4)
+          plt.show()
+     
+     return smooth_spec
+
+
+
+######################################################################
 def get_logg(mass,radius):
-    G = c.G
-    #M = 
-    # need to figure out how to input M
-    R = float(specfile[9:-44])
-    logg = np.log((G*M)/(R^2)
-'''
-    
-# returns values of temp, Radius, and Metallicity from PHOENIX file
-    # should eventually read the header of the file
-def get_values(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits'):
-    temp = float(specfile[3:-48])
-    radius = float(specfile[9:-44])
-    metal = float(specfile[14:-39])
-    
-    return temp, radius, metal
-    
-# calculates SNR based on given time and magnitude
-    #broken
-    # make so give time and mag and spit back spectrum with proper noise
-def get_snr(time=700,mag=15):
-    B = 1.89e6
-    T = math.sqrt(time)
-    M = 10 ** (-0.4 * mag)
-    SNR = B * T * M
+     '''
+     Return the value of logg based on mass and radius of star (in solar units)
+     '''
+     G = c.G
+     M = c.Msun * mass 
+     R = c.Rsun * radius
 
-    return SNR
+     return np.log10((G*M)/(R**2))
+
+                  
+
+######################################################################
+def get_values(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits'):                   
+     """
+     Returns values of temp, logg, and metallicity from PHOENIX file
+     should eventually read the header of the file
+
+     """
+
+     temp = float(specfile[3:-48])
+     logg = float(specfile[9:-44])
+     metal = float(specfile[14:-39])
+    
+     return temp, logg, metal
+
+
+######################################################################
+def get_snr(time=700,mag=15):
+     """ 
+     Calculates SNR based on given time and magnitude
+
+     !!! Currently broken !!!
+
+     Make so give time and mag and spit back appropriate SNR for FLOYDS I band.
+
+     """
+     B = 1.89e6
+     T = np.sqrt(time)
+     M = 10**(-0.4 * mag)
+     SNR = B * T * M
+
+     return SNR
