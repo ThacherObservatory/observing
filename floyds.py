@@ -216,16 +216,19 @@ def get_values(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fit
 ######################################################################
 def get_snr(time=700,mag=15):
      """ 
-     Calculates SNR based on given time and magnitude
-
-     !!! Currently broken !!!
-
-     Make so give time and mag and spit back appropriate SNR for FLOYDS I band.
-
+     Calculates expected FLOYDS SNR based on given time and magnitude
      """
-     B = 1.89e6
+     B = 1889.9
      T = np.sqrt(time)
-     M = 10**(-0.4 * mag)
+     M = 10**(-0.2 * mag)
      SNR = B * T * M
 
      return SNR
+
+
+def get_inttime(mag=15,SNR=20):
+     """
+     Calculates integration time needed to acheive a specified SNR for a 
+     star of a given a magnitude.
+     """
+     return 10**(0.4*mag)*(SNR/1889.9)**2
