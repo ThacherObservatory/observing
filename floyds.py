@@ -105,14 +105,14 @@ def add_noise(wave,spec,SNR=50.0,plot=False):
           plt.ion()
           plt.figure(3)
           plt.clf()
-          plt.plot(wave,spec,'k-')
-          plt.plot(wave,noisy_spec,'b-')
+          plt.plot(wave,scaled_s,'k-')
+          plt.plot(wave,noisy_spec,'r-')
           plt.xlabel('Wavelength')
           plt.ylabel('Flux')
           black_patch = mpatches.Patch(color='K', label = 'Original')
-          blue_patch = mpatches.Patch(color='B', label = 'Noisy')
-          plt.legend(handles=[black_patch,blue_patch], loc=4)
-          plt.xlim(np.min(wave[inds]),np.max(wave[inds])) 
+          red_patch = mpatches.Patch(color='R', label = 'Noisy')
+          plt.legend(handles=[black_patch,red_patch], loc=4)
+          plt.xlim(np.min(wave),np.max(wave)) 
           plt.show()
 
      return wave, noisy_spec
@@ -181,7 +181,7 @@ def flatten_spec(spec,window=45,polyorder=3,plot=False):
           plt.legend(handles=[black_patch,red_patch], loc=4)
           plt.show()
      
-     return smooth_spec
+     return flat_spec
 
 
 
