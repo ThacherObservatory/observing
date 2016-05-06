@@ -30,6 +30,7 @@ import matplotlib.patches as mpatches
 import glob as glob
 import math
 from scipy.signal import savgol_filter
+from scipy.signal import correlate
 
 def read_spectrum(specfile='lte03800-4.50-0.0.PHOENIX-ACES-AGSS-COND-2011-HiRes.fits',
                   wavefile='WAVE_PHOENIX-ACES-AGSS-COND-2011.fits', plot=False):
@@ -225,10 +226,46 @@ def get_snr(time=700,mag=15):
 
      return SNR
 
-
+######################################################################
 def get_inttime(mag=15,SNR=20):
      """
      Calculates integration time needed to acheive a specified SNR for a 
      star of a given a magnitude.
      """
      return 10**(0.4*mag)*(SNR/1889.9)**2
+     
+######################################################################
+def cross_correlate():
+    wave,spec = read_spectrum()
+    wave_resamp, spec_resamp = bin_spectrum(wave,spec)
+    #With noise
+    wave_resamp, noisy_spec = add_noise(wave_resamp, spec_resamp)    
+    flat_spec_noise = flatten_spec(noisy_spec)
+    wave_logspace_noise, flat_spec_noise = regrid_spectrum(wave_resamp, flat_spec_noise)
+    #Without noise
+    flat_spec_no_noise = flatten_spec(spec_resamp)
+    wave_logsapce_no_noise, flat_spec = regrid_spectrum(wave_resamp,flat_spec_no_noise)
+    #Cross correlate
+    plt.ion()
+    plt.figure(1)
+    plt.clf()
+    plt.plot(wave_logspace_noise,flat_spec_noise)
+    plt.plot(wave_logspace_no_noise,flat_spec)
+    
+    return 
+    
+
+
+plt.clf()
+plt.plot(lam,spec)
+plt.plot(lam,refspec2,'r-')
+plt.ylim(0,12)
+
+
+xcor = correlate(spec-10,refspec2-10,mode='full')
+
+# Check lag
+lag = np.linspace(-999,999,1999)
+plt.figure(2)
+plt.clf()
+plt.plot(lag,xcor)
