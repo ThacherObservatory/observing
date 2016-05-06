@@ -1,4 +1,4 @@
-######################################
+####################################################################################
 # Script to simulate LCOGT FLOYDS results
 # Katie O'Neill, Liam Kirkpatrick (with some help from jswift)
 #
@@ -16,7 +16,8 @@
 #                 smooth_spectrum, and flatten_spectrum added as key elements in
 #                 preparation for autocorrelation
 # KO/LK 5/5/16: Started cross_correlate
-######################################
+# jswift 5/6/16: Bug fixes. There was a bug involving numerical error in regrid_spec
+####################################################################################
 
 
 import numpy as np
@@ -127,12 +128,19 @@ def regrid_spectrum(wave,spec,plot=False):
      Resample spectrum into logspace
      """
 
-     inds, = np.where((wave >= 5400) & (wave <= 10000))
-     startwave = 5400
-     stopwave = 10000   
+     startwave = np.min(wave)
+     stopwave = np.max(wave)
      lnwave = np.linspace(np.log(startwave),np.log(stopwave),len(wave))
      wave_logspace = np.exp(lnwave)
+
+     # Fix for numerical errors in going to log and normal space
+     if np.min(wave_logspace) < startwave:
+          wave_logspace[0] = startwave
+     if np.max(wave_logspace) > stopwave:
+          wave_logspace[-1] = stopwave
+
      wave_interpolate = interpolate.interp1d(wave, spec)
+     
      wave_final = wave_interpolate(wave_logspace)
      
      if plot:
@@ -142,7 +150,7 @@ def regrid_spectrum(wave,spec,plot=False):
           plt.plot(wave_final,spec,'r-')
           plt.xlim(np.min(wave[inds]),np.max(wave[inds])) 
           
-     return wave_logspace, spec
+     return wave_logspace, wave_final
 
 
 ######################################################################
@@ -237,24 +245,30 @@ def get_inttime(mag=15,SNR=20):
      
 ######################################################################
 def cross_correlate():
-    wave,spec = read_spectrum()
-    wave_resamp, spec_resamp = bin_spectrum(wave,spec)
-    #With noise
-    wave_resamp, noisy_spec = add_noise(wave_resamp, spec_resamp)    
-    flat_spec_noise = flatten_spec(noisy_spec)
-    # error here due to regrid_spectrum: value in x_new below interpolation range
-    wave_logspace_noise, flat_spec_noise = regrid_spectrum(wave_resamp, flat_spec_noise)
-    #Without noise
-    flat_spec_no_noise = flatten_spec(spec_resamp)
-    wave_logsapce_no_noise, flat_spec = regrid_spectrum(wave_resamp,flat_spec_no_noise)
-    #Cross correlate
-    plt.ion()
-    plt.figure(1)
-    plt.clf()
-    plt.plot(wave_logspace_noise,flat_spec_noise)
-    plt.plot(wave_logspace_no_noise,flat_spec)
+     wave,spec = read_spectrum()
+     wave_resamp, spec_resamp = bin_spectrum(wave,spec)
+
+     #With noise
+     wave_resamp, noisy_spec = add_noise(wave_resamp, spec_resamp)    
+     flat_spec_noise = flatten_spec(noisy_spec)
+
+     # error here due to regrid_spectrum: value in x_new below interpolation range
+     wave_logspace_noise, flat_spec_log_noise = regrid_spectrum(wave_resamp, flat_spec_noise)
+
+     #Without noise
+     flat_spec_no_noise = flatten_spec(spec_resamp)
+     wave_logspace_no_noise, flat_spec_log = regrid_spectrum(wave_resamp,flat_spec_no_noise)
     
-    return 
+     #Cross correlate
+     plt.ion()
+     plt.figure(1)
+     plt.clf()
+     plt.plot(wave_logspace_noise,flat_spec_log_noise)
+     plt.plot(wave_logspace_no_noise,flat_spec_log)
+     
+     # You are now ready to cross correlate folks!!!!
+     
+     return 
     
 
 '''
