@@ -15,6 +15,7 @@
 #                 import homegrown constants (in utils) instead of scipy constants,
 #                 smooth_spectrum, and flatten_spectrum added as key elements in
 #                 preparation for autocorrelation
+# KO/LK 5/5/16: Started cross_correlate
 ######################################
 
 
@@ -241,6 +242,7 @@ def cross_correlate():
     #With noise
     wave_resamp, noisy_spec = add_noise(wave_resamp, spec_resamp)    
     flat_spec_noise = flatten_spec(noisy_spec)
+    # error here due to regrid_spectrum: value in x_new below interpolation range
     wave_logspace_noise, flat_spec_noise = regrid_spectrum(wave_resamp, flat_spec_noise)
     #Without noise
     flat_spec_no_noise = flatten_spec(spec_resamp)
@@ -255,7 +257,7 @@ def cross_correlate():
     return 
     
 
-
+'''
 plt.clf()
 plt.plot(lam,spec)
 plt.plot(lam,refspec2,'r-')
@@ -269,3 +271,4 @@ lag = np.linspace(-999,999,1999)
 plt.figure(2)
 plt.clf()
 plt.plot(lag,xcor)
+'''
