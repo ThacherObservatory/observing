@@ -244,12 +244,12 @@ def get_inttime(mag=15,SNR=20):
      return 10**(0.4*mag)*(SNR/1889.9)**2
      
 ######################################################################
-def cross_correlate():
+def cross_correlate(SNR=10.0):
      wave,spec = read_spectrum()
      wave_resamp, spec_resamp = bin_spectrum(wave,spec)
 
      #With noise
-     wave_resamp, noisy_spec = add_noise(wave_resamp, spec_resamp)    
+     wave_resamp, noisy_spec = add_noise(wave_resamp, spec_resamp, SNR=SNR)    
      flat_spec_noise = flatten_spec(noisy_spec)
 
      # error here due to regrid_spectrum: value in x_new below interpolation range
@@ -266,7 +266,11 @@ def cross_correlate():
      plt.plot(wave_logspace_noise,flat_spec_log_noise)
      plt.plot(wave_logspace_no_noise,flat_spec_log)
      
-     # You are now ready to cross correlate folks!!!!
+     cor = correlate(flat_spec_log_noise,flat_spec_log, mode='full' )
+     plt.ion()
+     plt.figure(2)
+     plt.clf()
+     plt.plot(cor)
      
      return 
     
