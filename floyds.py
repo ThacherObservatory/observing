@@ -17,6 +17,7 @@
 #                 preparation for autocorrelation
 # KO/LK 5/5/16: Started cross_correlate
 # jswift 5/6/16: Bug fixes. There was a bug involving numerical error in regrid_spec
+# KO 5/8/16: Started work on velocity x-axis conversion in cross_correlate
 ####################################################################################
 
 
@@ -26,7 +27,6 @@ from astropy.io import fits
 from scipy.signal import resample
 from scipy import interpolate
 import pdb
-#from scipy.constants import constants as c
 import constants as c
 import matplotlib.patches as mpatches
 import glob as glob
@@ -251,42 +251,43 @@ def cross_correlate(SNR=10.0):
      #With noise
      wave_resamp, noisy_spec = add_noise(wave_resamp, spec_resamp, SNR=SNR)    
      flat_spec_noise = flatten_spec(noisy_spec)
-
-     # error here due to regrid_spectrum: value in x_new below interpolation range
      wave_logspace_noise, flat_spec_log_noise = regrid_spectrum(wave_resamp, flat_spec_noise)
 
      #Without noise
      flat_spec_no_noise = flatten_spec(spec_resamp)
      wave_logspace_no_noise, flat_spec_log = regrid_spectrum(wave_resamp,flat_spec_no_noise)
     
-     #Cross correlate
+     #Plot with noise and without noise, both flattened and regridded into logspace
      plt.ion()
      plt.figure(1)
      plt.clf()
      plt.plot(wave_logspace_noise,flat_spec_log_noise)
      plt.plot(wave_logspace_no_noise,flat_spec_log)
      
+     #Cross correlate
+     #Need to check if this is the right order for np.correlate
      cor = correlate(flat_spec_log_noise,flat_spec_log, mode='full' )
      plt.ion()
      plt.figure(2)
      plt.clf()
      plt.plot(cor)
      
-     return 
+     #Cross correlate with velocity on x-axis
+     delta_lnwave = np.log(wave_logspace_noise)
+     #take median of difference and convert to meters from angstroms (check unit!)
+     diff = (np.diff(delta_lnwave))/(10e10)
+     # set value speed light in m/s
+     c = 2.99792458e8
+     # create vector for n from -329 to 329
+     peak = (len(cor))/2
+     
+'''  
+     n =    
+     v = c * n * diff
+     plt.ion()
+     plt.figure(3)
+     plt.clf()
+     plt.plot(v, cor)
+     plt.xlabel('Velocity m/s')
+''' 
     
-
-'''
-plt.clf()
-plt.plot(lam,spec)
-plt.plot(lam,refspec2,'r-')
-plt.ylim(0,12)
-
-
-xcor = correlate(spec-10,refspec2-10,mode='full')
-
-# Check lag
-lag = np.linspace(-999,999,1999)
-plt.figure(2)
-plt.clf()
-plt.plot(lag,xcor)
-'''
