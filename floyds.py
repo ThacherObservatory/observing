@@ -279,7 +279,11 @@ def cross_correlate(SNR=10.0):
      # set value speed light in m/s
      c = 2.99792458e8
      # create vector for n from -329 to 329
-     peak = (len(cor))/2
+     len = len(cor)
+     range = range(len(cor))
+     n_init = (len/2.0)-0.5
+     n = []
+     n = range - n_init
      
 '''  
      n =    
@@ -290,4 +294,4 @@ def cross_correlate(SNR=10.0):
      plt.plot(v, cor)
      plt.xlabel('Velocity m/s')
 ''' 
-    
+     
