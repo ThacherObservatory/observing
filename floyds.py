@@ -280,13 +280,21 @@ def cross_correlate(SNR=10.0):
      diff = (np.diff(delta_lnwave))/(10e10)
      # set value speed light in m/s
      c = 2.99792458e8
-     # create vector for n from -329 to 329
+     # recenter cor
      l = len(cor)
-     r = np.array(range(l))
+     ran = np.array(range(l))
      n_init = ((l-1)/2.0)
-     n = r - n_init   
-     #error here, says operands could not be broadcast together with shapes (328,) (657,)
-     v = diff * c * n
+     n_fin = ran - n_init   
+     
+     #creates graph with peak centered at 0
+     plt.ion()
+     plt.figure(4)
+     plt.clf()
+     plt.plot(n_fin, cor)
+     
+     #error here, says operands could not be broadcast together with shapes (328,) (657,)   
+     n_arr = np.array(n_fin)
+     v = diff * c * n_arr
      plt.ion()
      plt.figure(3)
      plt.clf()
