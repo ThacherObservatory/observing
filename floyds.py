@@ -18,6 +18,8 @@
 # KO/LK 5/5/16: Started cross_correlate
 # jswift 5/6/16: Bug fixes. There was a bug involving numerical error in regrid_spec
 # KO 5/8/16: Started work on velocity x-axis conversion in cross_correlate
+# KO/LK 5/9/16: Continued x-axis conversion
+# KO 5/10/16: Minor changes, worked on muliplication problem
 ####################################################################################
 
 
@@ -265,7 +267,7 @@ def cross_correlate(SNR=10.0):
      plt.plot(wave_logspace_no_noise,flat_spec_log)
      
      #Cross correlate
-     #Need to check if this is the right order for np.correlate
+     #(Need to check if this is the right order for np.correlate)
      cor = correlate(flat_spec_log_noise,flat_spec_log, mode='full' )
      plt.ion()
      plt.figure(2)
@@ -279,18 +281,17 @@ def cross_correlate(SNR=10.0):
      # set value speed light in m/s
      c = 2.99792458e8
      # create vector for n from -329 to 329
-     len = len(cor)
-     r = np.array(range(len))
-     n_init = ((len-1)/2.0)
-     n = r - n_init
-     
-'''  
-     n =    
-     v = c * n * diff
+     l = len(cor)
+     r = np.array(range(l))
+     n_init = ((l-1)/2.0)
+     n = r - n_init   
+     #error here, says operands could not be broadcast together with shapes (328,) (657,)
+     v = diff * c * n
      plt.ion()
      plt.figure(3)
      plt.clf()
      plt.plot(v, cor)
      plt.xlabel('Velocity m/s')
-''' 
+     
+     return
      
