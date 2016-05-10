@@ -280,9 +280,8 @@ def cross_correlate(SNR=10.0):
      c = 2.99792458e8
      # create vector for n from -329 to 329
      len = len(cor)
-     range = range(len(cor))
-     n_init = (len/2.0)-0.5
-     n = []
+     range = range(len)
+     n_init = ((len-1)/2.0)
      n = range - n_init
      
 '''  
