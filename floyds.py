@@ -275,11 +275,12 @@ def cross_correlate(SNR=10.0):
      plt.plot(cor)
      
      #Cross correlate with velocity on x-axis
-     delta_lnwave = np.log(wave_logspace_noise)
-     #take median of difference and convert to meters from angstroms (check unit!)
-     diff = (np.diff(delta_lnwave))/(10e10)
+     #delta_lnwave = np.log(wave_logspace_noise)
+     #take median of difference and convert to meters from angstroms
+     #diff = np.median((np.diff(delta_lnwave)))/(1e10)
      # set value speed light in m/s
      c = 2.99792458e8
+     dv=(((wave_logspace_noise[1]-wave_logspace_noise[0])/(wave_logspace_noise[0]))*c)
      # recenter cor
      l = len(cor)
      ran = np.array(range(l))
@@ -294,12 +295,13 @@ def cross_correlate(SNR=10.0):
      
      #error here, says operands could not be broadcast together with shapes (328,) (657,)   
      n_arr = np.array(n_fin)
-     v = diff * c * n_arr
+     v = (dv * n_arr)/1000.
      plt.ion()
      plt.figure(3)
      plt.clf()
      plt.plot(v, cor)
-     plt.xlabel('Velocity m/s')
+     plt.xlabel('Velocity km/s')
+     plt.ylabel('Correlation Amplitude')
      
      return
      
