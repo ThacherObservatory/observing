@@ -20,6 +20,7 @@
 # KO 5/8/16: Started work on velocity x-axis conversion in cross_correlate
 # KO/LK 5/9/16: Continued x-axis conversion
 # KO 5/10/16: Minor changes, worked on muliplication problem
+# KO/LK/js 5/22/16: Completed cross_correlate()
 ####################################################################################
 
 
@@ -299,7 +300,8 @@ def cross_correlate(SNR=10.0):
      plt.ion()
      plt.figure(3)
      plt.clf()
-     plt.plot(v, cor)
+     plt.plot(v, cor, 'o')
+     plt.plot(v,cor)
      plt.xlabel('Velocity km/s')
      plt.ylabel('Correlation Amplitude')
      
