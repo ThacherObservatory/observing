@@ -17,6 +17,10 @@
 #                 preparation for autocorrelation
 # KO/LK 5/5/16: Started cross_correlate
 # jswift 5/6/16: Bug fixes. There was a bug involving numerical error in regrid_spec
+# KO 5/8/16: Started work on velocity x-axis conversion in cross_correlate
+# KO/LK 5/9/16: Continued x-axis conversion
+# KO 5/10/16: Minor changes, worked on muliplication problem
+# KO/LK/js 5/22/16: Completed cross_correlate()
 ####################################################################################
 
 
@@ -26,7 +30,6 @@ from astropy.io import fits
 from scipy.signal import resample
 from scipy import interpolate
 import pdb
-#from scipy.constants import constants as c
 import constants as c
 import matplotlib.patches as mpatches
 import glob as glob
@@ -244,45 +247,63 @@ def get_inttime(mag=15,SNR=20):
      return 10**(0.4*mag)*(SNR/1889.9)**2
      
 ######################################################################
-def cross_correlate():
+def cross_correlate(SNR=10.0):
      wave,spec = read_spectrum()
      wave_resamp, spec_resamp = bin_spectrum(wave,spec)
 
      #With noise
-     wave_resamp, noisy_spec = add_noise(wave_resamp, spec_resamp)    
+     wave_resamp, noisy_spec = add_noise(wave_resamp, spec_resamp, SNR=SNR)    
      flat_spec_noise = flatten_spec(noisy_spec)
-
-     # error here due to regrid_spectrum: value in x_new below interpolation range
      wave_logspace_noise, flat_spec_log_noise = regrid_spectrum(wave_resamp, flat_spec_noise)
 
      #Without noise
      flat_spec_no_noise = flatten_spec(spec_resamp)
      wave_logspace_no_noise, flat_spec_log = regrid_spectrum(wave_resamp,flat_spec_no_noise)
     
-     #Cross correlate
+     #Plot with noise and without noise, both flattened and regridded into logspace
      plt.ion()
      plt.figure(1)
      plt.clf()
      plt.plot(wave_logspace_noise,flat_spec_log_noise)
      plt.plot(wave_logspace_no_noise,flat_spec_log)
      
-     # You are now ready to cross correlate folks!!!!
+     #Cross correlate
+     #(Need to check if this is the right order for np.correlate)
+     cor = correlate(flat_spec_log_noise,flat_spec_log, mode='full' )
+     plt.ion()
+     plt.figure(2)
+     plt.clf()
+     plt.plot(cor)
      
-     return 
-    
-
-'''
-plt.clf()
-plt.plot(lam,spec)
-plt.plot(lam,refspec2,'r-')
-plt.ylim(0,12)
-
-
-xcor = correlate(spec-10,refspec2-10,mode='full')
-
-# Check lag
-lag = np.linspace(-999,999,1999)
-plt.figure(2)
-plt.clf()
-plt.plot(lag,xcor)
-'''
+     #Cross correlate with velocity on x-axis
+     #delta_lnwave = np.log(wave_logspace_noise)
+     #take median of difference and convert to meters from angstroms
+     #diff = np.median((np.diff(delta_lnwave)))/(1e10)
+     # set value speed light in m/s
+     c = 2.99792458e8
+     dv=(((wave_logspace_noise[1]-wave_logspace_noise[0])/(wave_logspace_noise[0]))*c)
+     # recenter cor
+     l = len(cor)
+     ran = np.array(range(l))
+     n_init = ((l-1)/2.0)
+     n_fin = ran - n_init   
+     
+     #creates graph with peak centered at 0
+     plt.ion()
+     plt.figure(4)
+     plt.clf()
+     plt.plot(n_fin, cor)
+     
+     #error here, says operands could not be broadcast together with shapes (328,) (657,)   
+     n_arr = np.array(n_fin)
+     v = (dv * n_arr)/1000.
+     plt.ion()
+     plt.figure(3)
+     plt.clf()
+     plt.plot(v, cor, 'o')
+     plt.plot(v,cor)
+     plt.xlabel('Velocity km/s')
+     plt.ylabel('Correlation Amplitude')
+     
+     return
+     
